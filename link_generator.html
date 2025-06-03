@@ -24,12 +24,15 @@
   <h1>Generador de enlaces McDonald's</h1>
 
   <label for="scheme">Esquema</label>
-  <select id="scheme">
+  <select id="scheme" onchange="updateArcosmobileappPaths()">
     <option value="arcosmobileapp://">arcosmobileapp://</option>
     <option value="https://">https://</option>
   </select>
 
-  <label for="path">Ruta (por ejemplo, ecommerce, offers)</label>
+  <label for="arcosPath" id="arcosPathLabel" style="display:none;">Ruta predefinida</label>
+  <select id="arcosPath" style="display:none;"></select>
+
+  <label for="path">Ruta personalizada</label>
   <input type="text" id="path" placeholder="ecommerce">
 
   <label for="params">Parámetros (separados por &)</label>
@@ -43,9 +46,64 @@
   <div class="link-output" id="output"></div>
 
   <script>
+    const arcosPaths = [
+      "home",
+      "ecommerce",
+      "ecommerce_delivery",
+      "ecommerce_pickup",
+      "offers",
+      "restaurants",
+      "nearby_restaurant",
+      "restaurants/",
+      "products",
+      "stickers",
+      "qrcode",
+      "myoffers",
+      "externalurl/",
+      "configuration",
+      "privacypolicy",
+      "terms",
+      "institutional",
+      "about",
+      "profile",
+      "delivery",
+      "deliveryhub",
+      "favorite_on_boarding",
+      "myorders",
+      "ecommerce_order",
+      "loyalty",
+      "ecommerce_rating_order",
+      "cart",
+      "mcid",
+      "mypaymentmethods",
+      "mequivipdrive",
+      "clubvipautomac",
+      "securitysettings",
+      "managedevices",
+      "favorite_addresses"
+    ];
+
+    function updateArcosmobileappPaths() {
+      const scheme = document.getElementById('scheme').value;
+      const pathSelect = document.getElementById('arcosPath');
+      const label = document.getElementById('arcosPathLabel');
+      const pathInput = document.getElementById('path');
+
+      if (scheme === "arcosmobileapp://") {
+        pathSelect.style.display = 'block';
+        label.style.display = 'block';
+        pathInput.disabled = true;
+        pathSelect.innerHTML = arcosPaths.map(p => `<option value="${p}">${p}</option>`).join('');
+      } else {
+        pathSelect.style.display = 'none';
+        label.style.display = 'none';
+        pathInput.disabled = false;
+      }
+    }
+
     function generateLink() {
       const scheme = document.getElementById('scheme').value;
-      const path = document.getElementById('path').value;
+      const path = scheme === "arcosmobileapp://" ? document.getElementById('arcosPath').value : document.getElementById('path').value;
       const params = document.getElementById('params').value;
       const linkname = document.getElementById('linkname').value;
 
