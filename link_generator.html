@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>McDonald's Deep Link Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+    label, input, select {
+      display: block;
+      margin-bottom: 10px;
+    }
+    .link-output {
+      margin-top: 20px;
+    }
+    h2 {
+      margin-top: 40px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Generador de enlaces McDonald's</h1>
+
+  <label for="scheme">Esquema</label>
+  <select id="scheme">
+    <option value="arcosmobileapp://">arcosmobileapp://</option>
+    <option value="https://">https://</option>
+  </select>
+
+  <label for="path">Ruta (por ejemplo, ecommerce, offers)</label>
+  <input type="text" id="path" placeholder="ecommerce">
+
+  <label for="params">Parámetros (separados por &)</label>
+  <input type="text" id="params" placeholder="c=BR&a=MOP&id=74602&promotype=ORDER_AMOUNT&promoid=xxxxx">
+
+  <label for="linkname">Texto del enlace</label>
+  <input type="text" id="linkname" placeholder="Texto visible del enlace">
+
+  <button onclick="generateLink()">Generar enlace</button>
+
+  <div class="link-output" id="output"></div>
+
+  <script>
+    function generateLink() {
+      const scheme = document.getElementById('scheme').value;
+      const path = document.getElementById('path').value;
+      const params = document.getElementById('params').value;
+      const linkname = document.getElementById('linkname').value;
+
+      const fullUrl = `${scheme}${path}${params ? '?' + params : ''}`;
+      const anchor = `<h3><a href="${fullUrl}" target="_blank">${linkname || fullUrl}</a></h3>`;
+      document.getElementById('output').innerHTML += anchor;
+    }
+  </script>
+</body>
+</html>
