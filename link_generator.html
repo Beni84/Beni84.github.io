@@ -24,16 +24,14 @@
   <h1>Generador de enlaces McDonald's</h1>
 
   <label for="scheme">Esquema</label>
-  <select id="scheme" onchange="updateArcosmobileappPaths()">
+  <select id="scheme" onchange="updatePathInput()">
     <option value="arcosmobileapp://">arcosmobileapp://</option>
     <option value="https://">https://</option>
   </select>
 
-  <label for="arcosPath" id="arcosPathLabel" style="display:none;">Ruta predefinida</label>
-  <select id="arcosPath" style="display:none;"></select>
-
-  <label for="path">Ruta personalizada</label>
-  <input type="text" id="path" placeholder="ecommerce">
+  <label for="path">Ruta</label>
+  <select id="pathSelect" style="display:none;"></select>
+  <input type="text" id="pathInput" placeholder="ecommerce">
 
   <label for="params">Parámetros (separados por &)</label>
   <input type="text" id="params" placeholder="c=BR&a=MOP&id=74602&promotype=ORDER_AMOUNT&promoid=xxxxx">
@@ -83,27 +81,24 @@
       "favorite_addresses"
     ];
 
-    function updateArcosmobileappPaths() {
+    function updatePathInput() {
       const scheme = document.getElementById('scheme').value;
-      const pathSelect = document.getElementById('arcosPath');
-      const label = document.getElementById('arcosPathLabel');
-      const pathInput = document.getElementById('path');
+      const pathSelect = document.getElementById('pathSelect');
+      const pathInput = document.getElementById('pathInput');
 
       if (scheme === "arcosmobileapp://") {
+        pathInput.style.display = 'none';
         pathSelect.style.display = 'block';
-        label.style.display = 'block';
-        pathInput.disabled = true;
         pathSelect.innerHTML = arcosPaths.map(p => `<option value="${p}">${p}</option>`).join('');
       } else {
+        pathInput.style.display = 'block';
         pathSelect.style.display = 'none';
-        label.style.display = 'none';
-        pathInput.disabled = false;
       }
     }
 
     function generateLink() {
       const scheme = document.getElementById('scheme').value;
-      const path = scheme === "arcosmobileapp://" ? document.getElementById('arcosPath').value : document.getElementById('path').value;
+      const path = scheme === "arcosmobileapp://" ? document.getElementById('pathSelect').value : document.getElementById('pathInput').value;
       const params = document.getElementById('params').value;
       const linkname = document.getElementById('linkname').value;
 
@@ -111,6 +106,9 @@
       const anchor = `<h3><a href="${fullUrl}" target="_blank">${linkname || fullUrl}</a></h3>`;
       document.getElementById('output').innerHTML += anchor;
     }
+
+    // Inicializa correctamente según el valor por defecto del esquema
+    window.onload = updatePathInput;
   </script>
 </body>
 </html>
