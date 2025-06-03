@@ -46,7 +46,7 @@
   <h1>Generador de enlaces McDonald's</h1>
 
   <label for="scheme">Esquema</label>
-  <select id="scheme" onchange="updatePathInput()">
+  <select id="scheme" onchange="updatePathInput(); saveState()">
     <option value="arcosmobileapp://">arcosmobileapp://</option>
     <option value="https://mcd-latam-landings-q.gigigoapps.com/">https://mcd-latam-landings-q.gigigoapps.com/</option>
     <option value="https://mcd-landings-q.appmcdonalds.com/">https://mcd-landings-q.appmcdonalds.com/</option>
@@ -73,56 +73,31 @@
 
   <label for="path">Ruta</label>
   <select id="pathSelect" style="display:none;"></select>
-  <input type="text" id="pathInput" placeholder="ecommerce">
+  <input type="text" id="pathInput" placeholder="ecommerce" oninput="saveState()">
 
   <label for="params">Parámetros (separados por &)</label>
-  <input type="text" id="params" placeholder="c=BR&a=MOP&id=74602&promotype=ORDER_AMOUNT&promoid=xxxxx">
+  <input type="text" id="params" placeholder="c=BR&a=MOP&id=74602&promotype=ORDER_AMOUNT&promoid=xxxxx" oninput="saveState()">
 
   <label for="linkname">Texto del enlace</label>
-  <input type="text" id="linkname" placeholder="Texto visible del enlace">
+  <input type="text" id="linkname" placeholder="Texto visible del enlace" oninput="saveState()">
 
   <button onclick="generateLink()">Generar enlace</button>
   <button onclick="generateAllArcosLinks()">Generar todos los arcosmobileapp://</button>
   <a class="copy-link" onclick="copyAllLinks()">Copiar todos los enlaces</a>
+  <button onclick="clearAll()">Limpiar</button>
 
   <div class="link-output" id="output"></div>
 
   <script>
     const arcosPaths = [
-      "home",
-      "ecommerce",
-      "ecommerce_delivery",
-      "ecommerce_pickup",
-      "offers",
-      "restaurants",
-      "nearby_restaurant",
-      "restaurants/",
-      "products",
-      "stickers",
-      "qrcode",
-      "myoffers",
-      "externalurl/",
-      "configuration",
-      "privacypolicy",
-      "terms",
-      "institutional",
-      "about",
-      "profile",
-      "delivery",
-      "deliveryhub",
-      "favorite_on_boarding",
-      "myorders",
-      "ecommerce_order",
-      "loyalty",
-      "ecommerce_rating_order",
-      "cart",
-      "mcid",
-      "mypaymentmethods",
-      "mequivipdrive",
-      "clubvipautomac",
-      "securitysettings",
-      "managedevices",
-      "favorite_addresses"
+      "home", "ecommerce", "ecommerce_delivery", "ecommerce_pickup",
+      "offers", "restaurants", "nearby_restaurant", "restaurants/",
+      "products", "stickers", "qrcode", "myoffers", "externalurl/",
+      "configuration", "privacypolicy", "terms", "institutional", "about",
+      "profile", "delivery", "deliveryhub", "favorite_on_boarding",
+      "myorders", "ecommerce_order", "loyalty", "ecommerce_rating_order",
+      "cart", "mcid", "mypaymentmethods", "mequivipdrive", "clubvipautomac",
+      "securitysettings", "managedevices", "favorite_addresses"
     ];
 
     function updatePathInput() {
@@ -157,6 +132,7 @@
       anchor.appendChild(link);
 
       document.getElementById('output').appendChild(anchor);
+      saveState();
     }
 
     function generateAllArcosLinks() {
@@ -172,6 +148,7 @@
         anchor.appendChild(link);
         output.appendChild(anchor);
       });
+      saveState();
     }
 
     function copyAllLinks() {
@@ -184,7 +161,45 @@
       });
     }
 
-    window.onload = updatePathInput;
+    function saveState() {
+      const state = {
+        scheme: document.getElementById('scheme').value,
+        pathInput: document.getElementById('pathInput').value,
+        pathSelect: document.getElementById('pathSelect').value,
+        params: document.getElementById('params').value,
+        linkname: document.getElementById('linkname').value,
+        output: document.getElementById('output').innerHTML
+      };
+      localStorage.setItem('deepLinkGeneratorState', JSON.stringify(state));
+    }
+
+    function loadState() {
+      const saved = localStorage.getItem('deepLinkGeneratorState');
+      if (!saved) return;
+      const state = JSON.parse(saved);
+      document.getElementById('scheme').value = state.scheme;
+      updatePathInput();
+      document.getElementById('pathInput').value = state.pathInput;
+      document.getElementById('pathSelect').value = state.pathSelect;
+      document.getElementById('params').value = state.params;
+      document.getElementById('linkname').value = state.linkname;
+      document.getElementById('output').innerHTML = state.output;
+    }
+
+    function clearAll() {
+      localStorage.removeItem('deepLinkGeneratorState');
+      document.getElementById('scheme').value = "arcosmobileapp://";
+      document.getElementById('pathInput').value = "";
+      document.getElementById('pathSelect').value = "";
+      document.getElementById('params').value = "";
+      document.getElementById('linkname').value = "";
+      document.getElementById('output').innerHTML = "";
+      updatePathInput();
+    }
+
+    window.onload = function() {
+      loadState();
+    }
   </script>
 </body>
 </html>
