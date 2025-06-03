@@ -18,8 +18,8 @@
     h2 {
       margin-top: 40px;
     }
-    a:visited {
-      color: #800080; /* color morado para enlaces visitados */
+    a.visited {
+      color: #800080;
     }
   </style>
 </head>
@@ -106,11 +106,18 @@
       const linkname = document.getElementById('linkname').value;
 
       const fullUrl = `${scheme}${path}${params ? '?' + params : ''}`;
-      const anchor = `<h3><a href="${fullUrl}" target="_blank">${linkname || fullUrl}</a></h3>`;
-      document.getElementById('output').innerHTML += anchor;
+
+      const anchor = document.createElement('h3');
+      const link = document.createElement('a');
+      link.href = fullUrl;
+      link.target = '_blank';
+      link.textContent = linkname || fullUrl;
+      link.onclick = () => link.classList.add('visited');
+      anchor.appendChild(link);
+
+      document.getElementById('output').appendChild(anchor);
     }
 
-    // Inicializa correctamente según el valor por defecto del esquema
     window.onload = updatePathInput;
   </script>
 </body>
