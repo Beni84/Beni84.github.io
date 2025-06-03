@@ -2,24 +2,37 @@
 <html>
 <head>
   <title>McDonald's Deep Link Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
       background-color: #f9f9f9;
     }
-    label, input, select {
+    label, input, select, button {
       display: block;
+      width: 100%;
+      max-width: 480px;
       margin-bottom: 10px;
+      font-size: 1rem;
     }
     .link-output {
       margin-top: 20px;
+      max-width: 480px;
     }
     h2 {
       margin-top: 40px;
     }
     a.visited {
       color: #800080;
+    }
+    @media (max-width: 600px) {
+      h1 {
+        font-size: 1.5rem;
+      }
+      label, input, select, button {
+        font-size: 1rem;
+      }
     }
   </style>
 </head>
