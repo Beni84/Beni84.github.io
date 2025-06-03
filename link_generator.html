@@ -56,7 +56,8 @@
   <input type="text" id="linkname" placeholder="Texto visible del enlace">
 
   <button onclick="generateLink()">Generar enlace</button>
-  <button onclick="generateAllArcosLinks()">Generar todos los arcosmobileapp</button>
+  <button onclick="generateAllArcosLinks()">Generar todos los arcosmobileapp://</button>
+  <button onclick="copyAllLinks()">Copiar todos los enlaces</button>
 
   <div class="link-output" id="output"></div>
 
@@ -144,6 +145,16 @@
         link.onclick = () => link.classList.add('visited');
         anchor.appendChild(link);
         output.appendChild(anchor);
+      });
+    }
+
+    function copyAllLinks() {
+      const links = Array.from(document.querySelectorAll('.link-output a'));
+      const allUrls = links.map(link => link.href).join('\n');
+      navigator.clipboard.writeText(allUrls).then(() => {
+        alert('Todos los enlaces han sido copiados al portapapeles.');
+      }).catch(err => {
+        alert('Error al copiar los enlaces: ' + err);
       });
     }
 
