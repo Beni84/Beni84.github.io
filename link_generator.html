@@ -9,7 +9,7 @@
       padding: 20px;
       background-color: #f9f9f9;
     }
-    label, input, select, button, a.copy-link {
+    label, input, select, button {
       display: block;
       width: 100%;
       max-width: 480px;
@@ -42,7 +42,7 @@
       h1 {
         font-size: 1.5rem;
       }
-      label, input, select, button, a.copy-link {
+      label, input, select, button {
         font-size: 1rem;
       }
     }
@@ -78,32 +78,58 @@
   </select>
 
   <label for="path">Ruta</label>
-  <select id="pathSelect" style="display:none;"></select>
+  <select id="pathSelect" style="display:none;" onchange="updateDynamicParams(); saveState()"></select>
   <input type="text" id="pathInput" placeholder="ecommerce" oninput="saveState()">
 
-  <label for="params">Parámetros (separados por &)</label>
-  <input type="text" id="params" placeholder="c=BR&a=MOP&id=74602&promotype=ORDER_AMOUNT&promoid=xxxxx" oninput="saveState()">
+  <div id="dynamicParamsContainer"></div>
 
   <label for="linkname">Texto del enlace</label>
   <input type="text" id="linkname" placeholder="Texto visible del enlace" oninput="saveState()">
 
   <button onclick="generateLink()">Generar enlace</button>
   <button onclick="generateAllArcosLinks()">Generar todos los arcosmobileapp</button>
-  <button onclick="copyAllLinks()">Copiar todos los enlaces</button>
+  <button class="copy-link" onclick="copyAllLinks()">Copiar todos los enlaces</button>
   <button onclick="clearAll()">Limpiar</button>
 
   <div class="link-output" id="output"></div>
 
   <script>
     const arcosPaths = [
-      "home", "ecommerce", "ecommerce_delivery", "ecommerce_pickup",
-      "offers", "restaurants", "nearby_restaurant", "restaurants/",
-      "products", "stickers", "qrcode", "myoffers", "externalurl/",
-      "configuration", "privacypolicy", "terms", "institutional", "about",
-      "profile", "delivery", "deliveryhub", "favorite_on_boarding",
-      "myorders", "ecommerce_order", "loyalty", "ecommerce_rating_order",
-      "cart", "mcid", "mypaymentmethods", "mequivipdrive", "clubvipautomac",
-      "securitysettings", "managedevices", "favorite_addresses"
+      { path: "home" },
+      { path: "offers" },
+      { path: "offers/{CAMPAIGN_ID}", params: ["CAMPAIGN_ID", "COUNTRY"] },
+      { path: "myoffers" },
+      { path: "stickers" },
+      { path: "deliveryhub" },
+      { path: "configuration" },
+      { path: "profile" },
+      { path: "menu/products" },
+      { path: "ecommerce", queryParams: ["c", "a", "id"] },
+      { path: "restaurants" },
+      { path: "ecommerce", queryParams: ["c", "r"] },
+      { path: "ecommerce_delivery" },
+      { path: "ecommerce_mop" },
+      { path: "ecommerce_order", queryParams: ["c", "id"] },
+      { path: "ecommerce_rating_order", queryParams: ["c", "id"] },
+      { path: "cart" },
+      { path: "mcid" },
+      { path: "myorders" },
+      { path: "qrcode" },
+      { path: "privacypolicy" },
+      { path: "terms" },
+      { path: "institutional" },
+      { path: "about" },
+      { path: "favorite_on_boarding" },
+      { path: "card", queryParams: ["p"] },
+      { path: "pushalert" },
+      { path: "externalurl/{URL}", params: ["URL"] },
+      { path: "webview/{URL}", params: ["URL"] },
+      { path: "loyalty" },
+      { path: "loyalty_optin", queryParams: ["c", "r"] },
+      { path: "phonevalidation" },
+      { path: "mequivipdrive" },
+      { path: "clubvipautomac" },
+      { path: "ecommerce", queryParams: ["c", "id", "promotype", "promoid"] }
     ];
 
     function updatePathInput() {
@@ -114,20 +140,63 @@
       if (scheme === "arcosmobileapp://") {
         pathInput.style.display = 'none';
         pathSelect.style.display = 'block';
-        pathSelect.innerHTML = arcosPaths.map(p => `<option value="${p}">${p}</option>`).join('');
+        pathSelect.innerHTML = arcosPaths.map(p => `<option value="${p.path}">${p.path}</option>`).join('');
+        updateDynamicParams();
       } else {
         pathInput.style.display = 'block';
         pathSelect.style.display = 'none';
+        document.getElementById("dynamicParamsContainer").innerHTML = "";
       }
+    }
+
+    function updateDynamicParams() {
+      const path = document.getElementById('pathSelect').value;
+      const container = document.getElementById('dynamicParamsContainer');
+      container.innerHTML = "";
+
+      const selected = arcosPaths.find(p => p.path === path);
+      if (!selected) return;
+
+      const allParams = [...(selected.params || []), ...(selected.queryParams || [])];
+
+      allParams.forEach(param => {
+        const label = document.createElement("label");
+        label.textContent = `Valor para ${param}`;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.id = `param_${param}`;
+        input.placeholder = `Ingresa valor para ${param}`;
+        input.oninput = saveState;
+        container.appendChild(label);
+        container.appendChild(input);
+      });
     }
 
     function generateLink() {
       const scheme = document.getElementById('scheme').value;
       const path = scheme === "arcosmobileapp://" ? document.getElementById('pathSelect').value : document.getElementById('pathInput').value;
-      const params = document.getElementById('params').value;
       const linkname = document.getElementById('linkname').value;
 
-      const fullUrl = `${scheme}${path}${params ? '?' + params : ''}`;
+      let fullUrl = `${scheme}${path}`;
+
+      const selected = arcosPaths.find(p => p.path === path);
+      if (selected && selected.params) {
+        selected.params.forEach(param => {
+          const input = document.getElementById(`param_${param}`);
+          const value = input?.value || `{${param}}`;
+          fullUrl = fullUrl.replace(`{${param}}`, encodeURIComponent(value));
+        });
+      }
+
+      if (selected && selected.queryParams) {
+        const query = selected.queryParams.map(param => {
+          const input = document.getElementById(`param_${param}`);
+          const value = input?.value || `{${param}}`;
+          return `${param}=${encodeURIComponent(value)}`;
+        }).join("&");
+
+        fullUrl += query ? `?${query}` : "";
+      }
 
       const anchor = document.createElement('h3');
       const link = document.createElement('a');
@@ -143,8 +212,8 @@
 
     function generateAllArcosLinks() {
       const output = document.getElementById('output');
-      arcosPaths.forEach(path => {
-        const fullUrl = `arcosmobileapp://${path}`;
+      arcosPaths.forEach(p => {
+        const fullUrl = `arcosmobileapp://${p.path}`;
         const anchor = document.createElement('h3');
         const link = document.createElement('a');
         link.href = fullUrl;
@@ -172,7 +241,6 @@
         scheme: document.getElementById('scheme').value,
         pathInput: document.getElementById('pathInput').value,
         pathSelect: document.getElementById('pathSelect').value,
-        params: document.getElementById('params').value,
         linkname: document.getElementById('linkname').value,
         output: document.getElementById('output').innerHTML
       };
@@ -187,7 +255,6 @@
       updatePathInput();
       document.getElementById('pathInput').value = state.pathInput;
       document.getElementById('pathSelect').value = state.pathSelect;
-      document.getElementById('params').value = state.params;
       document.getElementById('linkname').value = state.linkname;
       document.getElementById('output').innerHTML = state.output;
     }
@@ -197,9 +264,9 @@
       document.getElementById('scheme').value = "arcosmobileapp://";
       document.getElementById('pathInput').value = "";
       document.getElementById('pathSelect').value = "";
-      document.getElementById('params').value = "";
       document.getElementById('linkname').value = "";
       document.getElementById('output').innerHTML = "";
+      document.getElementById('dynamicParamsContainer').innerHTML = "";
       updatePathInput();
     }
 
