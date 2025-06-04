@@ -86,10 +86,10 @@
   <label for="linkname">Texto del enlace</label>
   <input type="text" id="linkname" placeholder="Texto visible del enlace" oninput="saveState()">
 
-  <button onclick="generateLink()">Generar enlace</button>
-  <button onclick="generateAllArcosLinks()">Generar todos los arcosmobileapp</button>
+  <button class="copy-link" onclick="generateLink()">Generar enlace</button>
+  <button class="copy-link" onclick="generateAllArcosLinks()">Generar todos los arcosmobileapp</button>
   <button class="copy-link" onclick="copyAllLinks()">Copiar todos los enlaces</button>
-  <button onclick="clearAll()">Limpiar</button>
+  <button class="copy-link" onclick="clearAll()">Limpiar</button>
 
   <div class="link-output" id="output"></div>
 
