@@ -5,38 +5,60 @@
   <title>Bridge Test</title>
 </head>
 <body>
-  <h1>Enviar datos al Android WebView</h1>
-  <button onclick="sendGameData()">Enviar</button>
+  <h1>Juego: <span id="gameId">Cargando...</span></h1>
+
+  <div id="scoreButtons" style="display: none;">
+    <p>Enviar puntuación:</p>
+    <button onclick="sendScore(1000)">1000</button>
+    <button onclick="sendScore(2000)">2000</button>
+    <button onclick="sendScore(3000)">3000</button>
+  </div>
+
   <p id="output"></p>
 
   <script>
-    function sendGameData() {
+    let currentGameId = null;
+    let currentPayload = {};
+
+    function sendScore(score) {
+      if (!window.kmpJsBridge || !currentGameId) {
+        alert("Bridge o GameId no disponible");
+        return;
+      }
+
       const message = {
-        gameId: "jump_game",
+        gameId: currentGameId,
         payload: {
-          userId: "12345",
-          score: "1400"
+          ...currentPayload,
+          score: score.toString()
         }
       };
 
-      if (window.kmpJsBridge) {
-        window.kmpJsBridge.callNative(
-          "GameBridge",
-          JSON.stringify(message),
-          function(response) {
-            const data = JSON.parse(response);
-            document.getElementById("output").innerText = "Respuesta: " + JSON.stringify(data);
-            console.log("📲 Respuesta de Android:", data);
-          }
-        );
-      } else {
-        alert("kmpJsBridge no disponible");
-      }
+      window.kmpJsBridge.callNative(
+        "GameBridge",
+        JSON.stringify(message),
+        function(response) {
+          const data = JSON.parse(response);
+          document.getElementById("output").innerText = "📲 Respuesta: " + JSON.stringify(data);
+          console.log("📲 Respuesta de Android:", data);
+        }
+      );
     }
 
-    window.receiveDataFromKMP = function(jsonPriceToken) {
-      alert(jsonPriceToken);
-    }
+    // ✅ Función llamada por Android al cargar
+    window.receiveDataFromKMP = function(json) {
+      try {
+        const parsed = JSON.parse(json);
+        currentGameId = parsed.gameId;
+        currentPayload = parsed.payload || {};
+
+        document.getElementById("gameId").innerText = currentGameId;
+        document.getElementById("scoreButtons").style.display = "block";
+        console.log("🎮 Datos recibidos desde Android:", parsed);
+      } catch (e) {
+        console.error("❌ Error al parsear datos desde Android:", e);
+      }
+    };
   </script>
 </body>
 </html>
