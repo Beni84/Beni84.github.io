@@ -2,36 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>JS Bridge Test</title>
+  <title>Bridge Test</title>
 </head>
 <body>
-  <h1 id="title">Test WebView JS Bridge 1</h1>
-  <p id="subtitle">Esperando respuesta...</p>
-  <button onclick="callNativeBridge()">Llamar a KMP</button>
+  <h1>Enviar datos al Android WebView</h1>
+  <button onclick="sendGameData()">Enviar</button>
+  <p id="output"></p>
 
   <script>
-    function callNativeBridge() {
-      if (typeof window.kmpJsBridge === "undefined") {
-        alert("kmpJsBridge no está disponible");
-        return;
-      }
-
-      window.kmpJsBridge.callNative(
-        "NativeBridge",
-        JSON.stringify({ message: "Hola desde JS" }),
-        function (data) {
-          const result = JSON.parse(data);
-          document.getElementById("subtitle").innerText = result.message;
-          console.log("Recibido de KMP:", result.message);
+    function sendGameData() {
+      const message = {
+        gameId: "jump_game",
+        payload: {
+          userId: "12345",
+          score: "1400"
         }
-      );
-    }
+      };
 
-    setTimeout(() => {
-      const bridgeStatus = typeof window.kmpJsBridge !== "undefined";
-      document.getElementById("subtitle").innerText =
-        "Bridge disponible: " + bridgeStatus;
-    }, 1000);
+      if (window.kmpJsBridge) {
+        window.kmpJsBridge.callNative(
+          "GameBridge",
+          JSON.stringify(message),
+          function(response) {
+            const data = JSON.parse(response);
+            document.getElementById("output").innerText = "Respuesta: " + JSON.stringify(data);
+            console.log("📲 Respuesta de Android:", data);
+          }
+        );
+      } else {
+        alert("kmpJsBridge no disponible");
+      }
+    }
   </script>
 </body>
 </html>
