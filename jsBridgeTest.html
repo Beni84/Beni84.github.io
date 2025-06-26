@@ -1,59 +1,64 @@
-<h1>Juego: <span id="gameId">Cargando...</span></h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Bridge Test</title>
+</head>
+<body>
+  <h1>Juego: <span id="gameId">Cargando...</span></h1>
 
-<div id="scoreButtons" style="display: none;">
-  <p>Enviar puntuación:</p>
-  <button onclick="sendScore(1000)">1000</button>
-  <button onclick="sendScore(2000)">2000</button>
-  <button onclick="sendScore(3000)">3000</button>
-</div>
+  <div id="scoreButtons" style="display: none;">
+    <p>Enviar puntuación:</p>
+    <button onclick="sendScore(1000)">1000</button>
+    <button onclick="sendScore(2000)">2000</button>
+    <button onclick="sendScore(3000)">3000</button>
+  </div>
 
-<div id="output">Esperando datos desde Android...</div>
+  <p id="output"></p>
 
-<script>
-  let currentGameId = null;
-  let currentPayload = {};
+  <script>
+    let currentGameId = null;
+    let currentPayload = {};
 
-  function sendScore(score) {
-    if (!window.kmpJsBridge || !currentGameId) {
-      alert("Bridge o GameId no disponible");
-      return;
+    function sendScore(score) {
+      if (!window.kmpJsBridge || !currentGameId) {
+        alert("Bridge o GameId no disponible");
+        return;
+      }
+
+      const message = {
+        gameId: currentGameId,
+        payload: {
+          ...currentPayload,
+          score: score.toString()
+        }
+      };
+
+      window.kmpJsBridge.callNative(
+        "GameBridge",
+        JSON.stringify(message),
+        function(response) {
+          const data = JSON.parse(response);
+          document.getElementById("output").innerText = "📲 Respuesta: " + JSON.stringify(data);
+          console.log("📲 Respuesta de Android:", data);
+        }
+      );
     }
 
-    const message = {
-      gameId: currentGameId,
-      payload: {
-        ...currentPayload,
-        score: score.toString()
+    // ✅ Función llamada por Android al cargar
+    window.receiveDataFromKMP = function(json) {
+      try {
+        const parsed = JSON.parse(json);
+        currentGameId = parsed.gameId;
+        currentPayload = parsed.payload || {};
+
+        document.getElementById("gameId").innerText = currentGameId;
+        document.getElementById("scoreButtons").style.display = "block";
+        console.log("🎮 Datos recibidos desde Android:", parsed);
+      } catch (e) {
+        console.error("❌ Error al parsear datos desde Android:", e);
       }
     };
-
-    window.kmpJsBridge.callNative(
-      "GameBridge",
-      JSON.stringify(message),
-      function(response) {
-        try {
-          const data = JSON.parse(response);
-          document.getElementById("output").innerText =
-            "Respuesta:\n" + JSON.stringify(data, null, 2);
-        } catch (e) {
-          document.getElementById("output").innerText = "Error en respuesta";
-        }
-      }
-    );
-  }
-
-  window.receiveDataFromKMP = function(json) {
-    try {
-      const parsed = JSON.parse(json);
-      currentGameId = parsed.gameId;
-      currentPayload = parsed.payload || {};
-
-      document.getElementById("gameId").innerText = currentGameId;
-      document.getElementById("scoreButtons").style.display = "block";
-      document.getElementById("output").innerText =
-        "Datos recibidos:\n" + JSON.stringify(parsed, null, 2);
-    } catch (e) {
-      document.getElementById("output").innerText = "Error al parsear datos.";
-    }
-  };
-</script>
+  </script>
+</body>
+</html>
