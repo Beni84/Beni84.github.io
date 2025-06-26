@@ -91,8 +91,8 @@
         function(response) {
           const data = JSON.parse(response);
           document.getElementById("output").innerText =
-            "📲 Respuesta:\n" + JSON.stringify(data, null, 2);
-          console.log("📲 Respuesta de Android:", data);
+            "Respuesta:\n" + JSON.stringify(data, null, 2);
+          console.log("Respuesta de Android:", data);
         }
       );
     }
@@ -106,12 +106,12 @@
         document.getElementById("gameId").innerText = currentGameId;
         document.getElementById("scoreButtons").style.display = "block";
         document.getElementById("output").innerText =
-          "🎮 Juego recibido:\n" + JSON.stringify(parsed, null, 2);
+          "Juego recibido:\n" + JSON.stringify(parsed, null, 2);
 
-        console.log("🎮 Datos recibidos desde Android:", parsed);
+        console.log("Datos recibidos desde Android:", parsed);
       } catch (e) {
-        console.error("❌ Error al parsear datos desde Android:", e);
-        document.getElementById("output").innerText = "❌ Error al recibir datos.";
+        console.error("Error al parsear datos desde Android:", e);
+        document.getElementById("output").innerText = "Error al recibir datos.";
       }
     };
   </script>
