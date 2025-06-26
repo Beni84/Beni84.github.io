@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>JS Bridge Test</title>
+  <title>1 JS Bridge Test</title>
 </head>
 <body>
   <h1 id="title">Test WebView JS Bridge</h1>
@@ -11,20 +11,27 @@
 
   <script>
     function callNativeBridge() {
-      if (window.kmpJsBridge) {
-        window.kmpJsBridge.callNative(
-          "NativeBridge",
-          JSON.stringify({ message: "Hola desde JS" }),
-          function (data) {
-            const result = JSON.parse(data);
-            document.getElementById("subtitle").innerText = result.message;
-            console.log("Recibido de KMP:", result.message);
-          }
-        );
-      } else {
-        document.getElementById("subtitle").innerText = "Bridge no disponible.";
+      if (typeof window.kmpJsBridge === "undefined") {
+        alert("kmpJsBridge no está disponible");
+        return;
       }
+
+      window.kmpJsBridge.callNative(
+        "NativeBridge",
+        JSON.stringify({ message: "Hola desde JS" }),
+        function (data) {
+          const result = JSON.parse(data);
+          document.getElementById("subtitle").innerText = result.message;
+          console.log("Recibido de KMP:", result.message);
+        }
+      );
     }
+
+    setTimeout(() => {
+      const bridgeStatus = typeof window.kmpJsBridge !== "undefined";
+      document.getElementById("subtitle").innerText =
+        "Bridge disponible: " + bridgeStatus;
+    }, 1000);
   </script>
 </body>
 </html>
