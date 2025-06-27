@@ -81,7 +81,7 @@
         alert("Bridge o GameId no disponible");
         return;
       }
-
+    
       const message = {
         gameId: currentGameId,
         payload: {
@@ -89,18 +89,25 @@
           score: score.toString()
         }
       };
-
+    
       window.kmpJsBridge.callNative(
         "GameBridge",
         JSON.stringify(message),
         function(response) {
-          const data = JSON.parse(response);
-          document.getElementById("output").innerText =
-            "📲 Respuesta:\n" + JSON.stringify(data, null, 2);
-          console.log("📲 Respuesta de Android:", data);
+          try {
+            const data = JSON.parse(response);
+            document.getElementById("output").innerText =
+              "📲 Respuesta:\n" + JSON.stringify(data, null, 2);
+            console.log("📲 Respuesta de Android:", data);
+          } catch (e) {
+            document.getElementById("output").innerText =
+              "❌ Error procesando respuesta: " + e;
+            console.error("❌ JS parse error:", e, response);
+          }
         }
       );
     }
+
 
     window.receiveDataFromKMP = function(json) {
       try {
