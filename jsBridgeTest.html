@@ -105,23 +105,25 @@
         score: score.toString()
       };
 
+      
       window.kmpJsBridge.callNative(
         "GameBridge",
         JSON.stringify(message),
         function(response) {
-          document.getElementById("loading").style.display = "none";
-          try {
-            const data = JSON.parse(response);
-            document.getElementById("output").innerText =
-              "📲 Respuesta:\n" + JSON.stringify(data, null, 2);
-            console.log("📲 Respuesta de Android:", data);
-
-            highlightButton(score);
-
-          } catch (e) {
-            console.error("❌ Error al parsear respuesta:", e);
-            document.getElementById("output").innerText = "❌ Error en respuesta.";
-          }
+          setTimeout(() => {
+            document.getElementById("loading").style.display = "none";
+            try {
+              const data = JSON.parse(response);
+              document.getElementById("output").innerText =
+                "📲 Respuesta:\n" + JSON.stringify(data, null, 2);
+              console.log("📲 Respuesta de Android:", data);
+      
+              highlightButton(score);
+            } catch (e) {
+              console.error("❌ Error al parsear respuesta:", e);
+              document.getElementById("output").innerText = "❌ Error en respuesta.";
+            }
+          }, 500);
         }
       );
     }
