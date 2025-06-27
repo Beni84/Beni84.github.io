@@ -127,7 +127,7 @@
       window.kmpJsBridge.callNative(
         "GameBridge", // Nombre del handler registrado en Kotlin
         JSON.stringify(message), // Datos enviados
-        function(response) { // Callback cuando Native responde
+        onCallback = function(response) { // Callback cuando Native responde
           // ⏳ Espera mínima para que el loading se vea
           setTimeout(() => {
             document.getElementById("loading").style.display = "none";
