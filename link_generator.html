@@ -1,3 +1,4 @@
+<!-- Reemplaza todo tu HTML por este actualizado -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -42,9 +43,6 @@
       h1 {
         font-size: 1.5rem;
       }
-      label, input, select, button {
-        font-size: 1rem;
-      }
     }
   </style>
 </head>
@@ -78,8 +76,8 @@
   </select>
 
   <label for="path">Ruta</label>
-  <select id="pathSelect" style="display:none;" onchange="updateDynamicParams(); saveState()"></select>
-  <input type="text" id="pathInput" placeholder="ecommerce" oninput="saveState()">
+  <select id="pathSelect" onchange="handleCustomPath(); updateDynamicParams(); saveState()"></select>
+  <input type="text" id="pathInput" placeholder="Ruta personalizada..." oninput="updateDynamicParams(); saveState()" style="display: none;">
 
   <div id="dynamicParamsContainer"></div>
 
@@ -132,28 +130,34 @@
       { path: "ecommerce", queryParams: ["c", "id", "promotype", "promoid"] },
       { path: "links/home" },
       { path: "links/ecommerce_order", queryParams: ["c", "id"] },
-      { path: "links/ecommerce_rating_order", queryParams: ["c", "id"] }
+      { path: "links/ecommerce_rating_order", queryParams: ["c", "id"] },
+      { path: "🔧 Personalizado" }
     ];
 
     function updatePathInput() {
-      const scheme = document.getElementById('scheme').value;
       const pathSelect = document.getElementById('pathSelect');
+      pathSelect.innerHTML = arcosPaths.map(p => `<option value="${p.path}">${p.path}</option>`).join('');
+      handleCustomPath();
+      updateDynamicParams();
+    }
+
+    function handleCustomPath() {
+      const selectedPath = document.getElementById('pathSelect').value;
       const pathInput = document.getElementById('pathInput');
 
-      if (scheme === "arcosmobileapp://") {
-        pathInput.style.display = 'none';
-        pathSelect.style.display = 'block';
-        pathSelect.innerHTML = arcosPaths.map(p => `<option value="${p.path}">${p.path}</option>`).join('');
-        updateDynamicParams();
-      } else {
+      if (selectedPath === "🔧 Personalizado") {
         pathInput.style.display = 'block';
-        pathSelect.style.display = 'none';
-        document.getElementById("dynamicParamsContainer").innerHTML = "";
+      } else {
+        pathInput.style.display = 'none';
+        pathInput.value = "";
       }
     }
 
     function updateDynamicParams() {
-      const path = document.getElementById('pathSelect').value;
+      const selectedPath = document.getElementById('pathSelect').value;
+      const customPath = document.getElementById('pathInput').value;
+      const path = selectedPath === "🔧 Personalizado" ? customPath : selectedPath;
+
       const container = document.getElementById('dynamicParamsContainer');
       container.innerHTML = "";
 
@@ -177,7 +181,9 @@
 
     function generateLink() {
       const scheme = document.getElementById('scheme').value;
-      const path = scheme === "arcosmobileapp://" ? document.getElementById('pathSelect').value : document.getElementById('pathInput').value;
+      const selectedPath = document.getElementById('pathSelect').value;
+      const customPath = document.getElementById('pathInput').value;
+      const path = selectedPath === "🔧 Personalizado" ? customPath : selectedPath;
       const linkname = document.getElementById('linkname').value;
 
       let fullUrl = `${scheme}${path}`;
@@ -197,7 +203,6 @@
           const value = input?.value || `{${param}}`;
           return `${param}=${encodeURIComponent(value)}`;
         }).join("&");
-
         fullUrl += query ? `?${query}` : "";
       }
 
@@ -216,6 +221,7 @@
     function generateAllArcosLinks() {
       const output = document.getElementById('output');
       arcosPaths.forEach(p => {
+        if (p.path === "🔧 Personalizado") return;
         const fullUrl = `arcosmobileapp://${p.path}`;
         const anchor = document.createElement('h3');
         const link = document.createElement('a');
@@ -242,8 +248,8 @@
     function saveState() {
       const state = {
         scheme: document.getElementById('scheme').value,
-        pathInput: document.getElementById('pathInput').value,
         pathSelect: document.getElementById('pathSelect').value,
+        pathInput: document.getElementById('pathInput').value,
         linkname: document.getElementById('linkname').value,
         output: document.getElementById('output').innerHTML
       };
@@ -256,17 +262,18 @@
       const state = JSON.parse(saved);
       document.getElementById('scheme').value = state.scheme;
       updatePathInput();
-      document.getElementById('pathInput').value = state.pathInput;
       document.getElementById('pathSelect').value = state.pathSelect;
+      document.getElementById('pathInput').value = state.pathInput;
       document.getElementById('linkname').value = state.linkname;
       document.getElementById('output').innerHTML = state.output;
+      updateDynamicParams();
     }
 
     function clearAll() {
       localStorage.removeItem('deepLinkGeneratorState');
       document.getElementById('scheme').value = "arcosmobileapp://";
-      document.getElementById('pathInput').value = "";
       document.getElementById('pathSelect').value = "";
+      document.getElementById('pathInput').value = "";
       document.getElementById('linkname').value = "";
       document.getElementById('output').innerHTML = "";
       document.getElementById('dynamicParamsContainer').innerHTML = "";
