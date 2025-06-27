@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bridge Test</title>
+  <title>1 Bridge Test</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -48,6 +48,10 @@
       transform: scale(1.05);
     }
 
+    button.active {
+      background-color: #f39c12 !important;
+    }
+
     #output {
       margin-top: 30px;
       background-color: #ecf0f1;
@@ -57,6 +61,12 @@
       font-family: monospace;
       color: #2c3e50;
       white-space: pre-wrap;
+    }
+
+    #loading {
+      display: none;
+      font-style: italic;
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -70,17 +80,24 @@
     <button onclick="sendScore(3000)">3000</button>
   </div>
 
+  <div id="loading">⌛ Pensando...</div>
+
   <div id="output">Esperando datos desde nativo</div>
 
   <script>
     let currentGameId = null;
     let currentPayload = {};
+    let lastScoreSent = null;
 
     function sendScore(score) {
       if (!window.kmpJsBridge || !currentGameId) {
         alert("Bridge o GameId no disponible");
         return;
       }
+
+      lastScoreSent = score;
+
+      document.getElementById("loading").style.display = "block";
 
       const message = {
         gameId: currentGameId,
@@ -92,16 +109,33 @@
         "GameBridge",
         JSON.stringify(message),
         function(response) {
+          document.getElementById("loading").style.display = "none";
           try {
             const data = JSON.parse(response);
             document.getElementById("output").innerText =
               "📲 Respuesta:\n" + JSON.stringify(data, null, 2);
             console.log("📲 Respuesta de Android:", data);
+
+            highlightButton(score);
+
           } catch (e) {
             console.error("❌ Error al parsear respuesta:", e);
+            document.getElementById("output").innerText = "❌ Error en respuesta.";
           }
         }
       );
+    }
+
+    function highlightButton(score) {
+      const buttons = document.querySelectorAll("#scoreButtons button");
+      buttons.forEach((btn) => {
+        const btnScore = parseInt(btn.innerText);
+        if (btnScore === score) {
+          btn.classList.add("active");
+        } else {
+          btn.style.display = "none";
+        }
+      });
     }
 
     window.receiveDataFromKMP = function(parsed) {
