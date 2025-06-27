@@ -64,7 +64,7 @@
   <h1>Juego: <span id="gameId">Cargando...</span></h1>
 
   <div id="scoreButtons" style="display: none;">
-    <p>2 Enviar puntuación:</p>
+    <p>3 Enviar puntuación:</p>
     <button onclick="sendScore(1000)">1000</button>
     <button onclick="sendScore(2000)">2000</button>
     <button onclick="sendScore(3000)">3000</button>
@@ -112,7 +112,6 @@
         "GameBridge",
         JSON.stringify({message:"Hello"}),
         function(data) {
-            document.getElementById("subtitle").innerText = data;
             console.log("📲 Respuesta de Android:", data);
         }
       );
