@@ -76,6 +76,24 @@
     let currentGameId = null;
     let currentPayload = {};
 
+    window.receiveDataFromKMP = function(json) {
+      try {
+        const parsed = typeof json === "string" ? JSON.parse(json) : json;
+        currentGameId = parsed.gameId;
+        currentPayload = parsed.payload || {};
+    
+        document.getElementById("gameId").innerText = currentGameId;
+        document.getElementById("scoreButtons").style.display = "block";
+        document.getElementById("output").innerText =
+          "🎮 Datos recibidos:\n" + JSON.stringify(parsed, null, 2);
+    
+        console.log("🎮 Datos recibidos desde Android:", parsed);
+      } catch (e) {
+        console.error("❌ Error al parsear datos desde Android:", e);
+        document.getElementById("output").innerText = "❌ Error al recibir datos.";
+      }
+    };
+
     function sendScore(score) {
       if (!window.kmpJsBridge || !currentGameId) {
         alert("Bridge o GameId no disponible");
@@ -109,23 +127,7 @@
     }
 
 
-    window.receiveDataFromKMP = function(json) {
-      try {
-        const parsed = typeof json === "string" ? JSON.parse(json) : json;
-        currentGameId = parsed.gameId;
-        currentPayload = parsed.payload || {};
-
-        document.getElementById("gameId").innerText = currentGameId;
-        document.getElementById("scoreButtons").style.display = "block";
-        document.getElementById("output").innerText =
-          "🎮 Datos recibidos:\n" + JSON.stringify(parsed, null, 2);
-
-        console.log("🎮 Datos recibidos desde Android:", parsed);
-      } catch (e) {
-        console.error("❌ Error al parsear datos desde Android:", e);
-        document.getElementById("output").innerText = "❌ Error al recibir datos.";
-      }
-    };
+    
   </script>
 </body>
 </html>
