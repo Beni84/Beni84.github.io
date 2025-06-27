@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>1 Bridge Test</title>
   <style>
+    /* Estilos básicos para el cuerpo y texto */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       background-color: #f4f4f4;
@@ -16,21 +17,25 @@
       box-sizing: border-box;
     }
 
+    /* Título principal */
     h1 {
       color: #2c3e50;
       margin-top: 100px;
       margin-bottom: 10px;
     }
 
+    /* Estilo del ID del juego */
     #gameId {
       font-weight: bold;
       color: #e74c3c;
     }
 
+    /* Contenedor de los botones de puntuación */
     #scoreButtons {
       margin-top: 20px;
     }
 
+    /* Estilo de botones */
     button {
       background-color: #3498db;
       color: white;
@@ -43,15 +48,18 @@
       transition: background-color 0.3s, transform 0.2s;
     }
 
+    /* Efecto al pasar el ratón */
     button:hover {
       background-color: #2980b9;
       transform: scale(1.05);
     }
 
+    /* Botón seleccionado (activo) */
     button.active {
       background-color: #f39c12 !important;
     }
 
+    /* Zona de salida para mensajes de estado */
     #output {
       margin-top: 30px;
       background-color: #ecf0f1;
@@ -63,6 +71,7 @@
       white-space: pre-wrap;
     }
 
+    /* Loading textual simple */
     #loading {
       display: none;
       font-style: italic;
@@ -71,8 +80,10 @@
   </style>
 </head>
 <body>
+  <!-- Cabecera con ID de juego -->
   <h1>Juego: <span id="gameId">Cargando...</span></h1>
 
+  <!-- Botones para enviar puntuación, ocultos por defecto -->
   <div id="scoreButtons" style="display: none;">
     <p>Enviar puntuación:</p>
     <button onclick="sendScore(1000)">1000</button>
@@ -80,16 +91,21 @@
     <button onclick="sendScore(3000)">3000</button>
   </div>
 
+  <!-- Texto de carga -->
   <div id="loading">⌛ Pensando...</div>
 
+  <!-- Resultado de la comunicación nativa -->
   <div id="output">Esperando datos desde nativo</div>
 
   <script>
+    // Variables globales para el estado del juego
     let currentGameId = null;
     let currentPayload = {};
     let lastScoreSent = null;
 
+    // Función que se ejecuta al pulsar un botón de puntuación
     function sendScore(score) {
+      // Validación básica: ¿hay bridge y gameId?
       if (!window.kmpJsBridge || !currentGameId) {
         alert("Bridge o GameId no disponible");
         return;
@@ -97,37 +113,44 @@
 
       lastScoreSent = score;
 
+      // Mostrar indicador de carga
       document.getElementById("loading").style.display = "block";
 
+      // Crear el mensaje que se enviará al bridge nativo
       const message = {
         gameId: currentGameId,
         userId: currentPayload.mcid || "unknown",
         score: score.toString()
       };
 
-      
+      // Comunicación JS → Native con callback para respuesta
       window.kmpJsBridge.callNative(
-        "GameBridge",
-        JSON.stringify(message),
-        function(response) {
+        "GameBridge", // Nombre del handler registrado en Kotlin
+        JSON.stringify(message), // Datos enviados
+        function(response) { // Callback cuando Native responde
+          // ⏳ Espera mínima para que el loading se vea
           setTimeout(() => {
             document.getElementById("loading").style.display = "none";
             try {
+              // Interpretar respuesta como JSON
               const data = JSON.parse(response);
+              // Mostrar respuesta
               document.getElementById("output").innerText =
                 "📲 Respuesta:\n" + JSON.stringify(data, null, 2);
               console.log("📲 Respuesta de Android:", data);
-      
+
+              // Destacar el botón pulsado
               highlightButton(score);
             } catch (e) {
               console.error("❌ Error al parsear respuesta:", e);
               document.getElementById("output").innerText = "❌ Error en respuesta.";
             }
-          }, 500);
+          }, 500); // <-- retardo artificial para ver el loading
         }
       );
     }
 
+    // Destaca el botón pulsado y oculta los demás
     function highlightButton(score) {
       const buttons = document.querySelectorAll("#scoreButtons button");
       buttons.forEach((btn) => {
@@ -135,15 +158,17 @@
         if (btnScore === score) {
           btn.classList.add("active");
         } else {
-          btn.style.display = "none";
+          btn.style.display = "none"; // Oculta los no pulsados
         }
       });
     }
 
+    // Esta función la llama Kotlin/Native al cargar
     window.receiveDataFromKMP = function(parsed) {
       currentGameId = parsed.gameId;
       currentPayload = parsed.payload || {};
 
+      // Mostrar datos recibidos y activar los botones
       document.getElementById("gameId").innerText = currentGameId;
       document.getElementById("scoreButtons").style.display = "block";
       document.getElementById("output").innerText =
