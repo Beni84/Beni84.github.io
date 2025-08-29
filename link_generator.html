@@ -220,9 +220,26 @@
 
     function generateAllArcosLinks() {
       const output = document.getElementById('output');
+      const scheme = document.getElementById('scheme').value;
+    
       arcosPaths.forEach(p => {
         if (p.path === "🔧 Personalizado") return;
-        const fullUrl = `arcosmobileapp://${p.path}`;
+    
+        let fullUrl = `${scheme}${p.path}`;
+    
+        // Si hay parámetros en la ruta, los dejamos visibles como placeholders
+        if (p.params) {
+          p.params.forEach(param => {
+            fullUrl = fullUrl.replace(`{${param}}`, `{${param}}`);
+          });
+        }
+    
+        // Si hay queryParams, también los dejamos visibles como placeholders
+        if (p.queryParams) {
+          const query = p.queryParams.map(param => `${param}={${param}}`).join("&");
+          fullUrl += query ? `?${query}` : "";
+        }
+    
         const anchor = document.createElement('h3');
         const link = document.createElement('a');
         link.href = fullUrl;
@@ -232,6 +249,7 @@
         anchor.appendChild(link);
         output.appendChild(anchor);
       });
+    
       saveState();
     }
 
